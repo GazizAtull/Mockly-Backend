@@ -1,0 +1,78 @@
+{
+  "id": "mockly",
+  "realm": "mockly",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "mockly-backend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "mockly-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect"
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "CUSTOMER"
+      },
+      {
+        "name": "INTERVIEWER"
+      },
+      {
+        "name": "ADMIN"
+      },
+      {
+        "name": "CANDIDATE"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin-user",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ]
+    },
+    {
+      "username": "customer",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "customer",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "CUSTOMER",
+        "CANDIDATE"
+      ]
+    },
+    {
+      "username": "interviewer",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "interviewer",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "INTERVIEWER"
+      ]
+    }
+  ]
+}

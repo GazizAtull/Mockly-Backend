@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: mockly_postgres
+    environment:
+      POSTGRES_USER: mockly
+      POSTGRES_PASSWORD: mockly_password
+      POSTGRES_DB: mockly_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - mockly_pgdata:/var/lib/postgresql/data
+      - ./infrastructure/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: mockly_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: mockly_user
+      RABBITMQ_DEFAULT_PASS: mockly_pass
+    ports:
+      - "5672:5672"   # broker
+      - "15672:15672" # management panel
+    restart: always
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    container_name: mockly_keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/mockly_db
+      KC_DB_USERNAME: mockly
+      KC_DB_PASSWORD: mockly_password
+      KC_DB_SCHEMA: keycloak
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infrastructure/keycloak:/opt/keycloak/data/import
+    depends_on:
+      - postgres
+    restart: always
+
+volumes:
+  mockly_pgdata:
