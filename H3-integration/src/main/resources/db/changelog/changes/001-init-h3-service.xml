@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="001-create-h3-analytics" author="mockly">
+        <sql>CREATE SCHEMA IF NOT EXISTS h3_service;</sql>
+
+        <createTable schemaName="h3_service" tableName="h3_analytics">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="session_id" type="UUID"/>
+            <column name="h3_index" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="latitude" type="FLOAT8"/>
+            <column name="longitude" type="FLOAT8"/>
+            <column name="avg_latency_ms" type="INT"/>
+            <column name="packet_loss_percent" type="FLOAT8"/>
+            <column name="disconnect_count" type="INT"/>
+            <column name="quality_score" type="FLOAT8"/>
+            <column name="fallback_recommended" type="BOOLEAN"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex schemaName="h3_service" tableName="h3_analytics" indexName="idx_h3_analytics_h3_index">
+            <column name="h3_index"/>
+        </createIndex>
+
+        <createIndex schemaName="h3_service" tableName="h3_analytics" indexName="idx_h3_analytics_session_id">
+            <column name="session_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

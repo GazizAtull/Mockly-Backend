@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <changeSet id="001-create-users-and-profiles" author="chatgpt">
+        <sql>CREATE SCHEMA IF NOT EXISTS user_service;</sql>
+
+        <createTable schemaName="user_service" tableName="users">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_users_email"/>
+            </column>
+            <column name="password_hash" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex schemaName="user_service" tableName="users" indexName="idx_users_email">
+            <column name="email"/>
+        </createIndex>
+
+        <createTable schemaName="user_service" tableName="profiles">
+            <column name="user_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"
+                             foreignKeyName="fk_profiles_user"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="role" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)"/>
+            <column name="surname" type="VARCHAR(100)"/>
+            <column name="avatar_url" type="VARCHAR(500)"/>
+            <column name="level" type="VARCHAR(50)"/>
+            <column name="skills" type="jsonb" defaultValueComputed="'[]'::jsonb"/>
+        </createTable>
+
+        <sql>
+            ALTER TABLE user_service.profiles
+                ADD CONSTRAINT chk_profiles_role CHECK (role IN ('CANDIDATE','INTERVIEWER','ADMIN'));
+        </sql>
+
+        <createIndex schemaName="user_service" tableName="profiles" indexName="idx_profiles_role">
+            <column name="role"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

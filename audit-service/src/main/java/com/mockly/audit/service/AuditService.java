@@ -1,6 +1,5 @@
 package com.mockly.audit.service;
 
-import com.mockly.audit.dto.AuditDto.AuditAction;
 import com.mockly.audit.dto.AuditDto.AuditLogResponse;
 import com.mockly.audit.entity.AuditLog;
 import com.mockly.audit.repository.AuditLogRepository;
@@ -9,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +20,14 @@ public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
 
-    @Async
     @Transactional
-    public void log(UUID userId, String role, AuditAction action,
+    public void log(UUID userId, String role, String action,
             String entityType, UUID entityId, String result, String details) {
         try {
             AuditLog auditLog = AuditLog.builder()
                     .userId(userId)
                     .role(role)
-                    .action(action.name())
+                    .action(action)
                     .entityType(entityType)
                     .entityId(entityId)
                     .result(result)

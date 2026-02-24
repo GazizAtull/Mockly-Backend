@@ -1,4 +1,4 @@
-package com.h3.integration.entity;
+package com.h3.integration.com.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -10,13 +10,6 @@ import java.util.UUID;
 
 public class AuditDto {
 
-    public enum AuditAction {
-        PROFILE_UPDATED,
-        USER_LOGGED_IN,
-        USER_REGISTERED,
-        H3_ANALYTICS_RECORDED
-    }
-
     @Data
     @Builder
     @NoArgsConstructor
@@ -24,7 +17,7 @@ public class AuditDto {
     public static class AuditEvent {
         private UUID userId;
         private String role;
-        private AuditAction action;
+        private String action; // Было AuditAction, стало String для гибкости
         private String entityType;
         private UUID entityId;
         private String result;

@@ -1,4 +1,4 @@
-package com.h3.integration.service;
+package com.h3.integration.com.service;
 
 import lombok.Builder;
 import lombok.Data;

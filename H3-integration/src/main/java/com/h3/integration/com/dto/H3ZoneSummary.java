@@ -1,4 +1,4 @@
-package com.h3.integration.dto;
+package com.h3.integration.com.dto;
 
 public record H3ZoneSummary(
         String h3Index,

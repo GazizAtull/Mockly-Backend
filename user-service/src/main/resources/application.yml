@@ -6,24 +6,33 @@ server:
 spring:
   application:
     name: user-service
+
   datasource:
     url: jdbc:postgresql://localhost:5432/mockly_db?currentSchema=user_service
     username: mockly
     password: mockly_password
     driver-class-name: org.postgresql.Driver
+
   jpa:
+    open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
-    show-sql: true
+    show-sql: false
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: user_service
+
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${KEYCLOAK_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:mockly}
-          jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8080}/realms/${KEYCLOAK_REALM:mockly}/protocol/openid-connect/certs
+
   rabbitmq:
     host: ${MQ_HOST:localhost}
     port: ${MQ_PORT:5672}
@@ -33,5 +42,10 @@ spring:
 keycloak:
   url: ${KEYCLOAK_URL:http://localhost:8080}
   realm: ${KEYCLOAK_REALM:mockly}
-  client-id: mockly-backend
-  client-secret: mockly-secret
+  client-id: ${KEYCLOAK_CLIENT_ID:mockly-backend}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:v2bJIQWfmLldVqySFWVIfc8E2UoTZiMK}
+
+app:
+  audit:
+    exchange: ${AUDIT_EXCHANGE:audit.exchange}
+    routing-key: ${AUDIT_ROUTING_KEY:audit.event}

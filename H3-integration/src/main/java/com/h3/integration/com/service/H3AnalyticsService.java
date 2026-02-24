@@ -1,11 +1,12 @@
-package com.h3.integration.service;
+package com.h3.integration.com.service;
 
-import com.h3.integration.dto.H3AnalyticsResponse;
-import com.h3.integration.dto.H3ZoneSummary;
-import com.h3.integration.dto.RecordMetricsRequest;
-import com.h3.integration.entity.H3Analytics;
-import com.h3.integration.repository.H3AnalyticsRepository;
+import com.h3.integration.com.dto.H3AnalyticsResponse;
+import com.h3.integration.com.dto.H3ZoneSummary;
+import com.h3.integration.com.dto.RecordMetricsRequest;
+import com.h3.integration.com.entity.H3Analytics;
+import com.h3.integration.com.repository.H3AnalyticsRepository;
 import com.uber.h3core.H3Core;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class H3AnalyticsService {
 
     private final H3AnalyticsRepository h3AnalyticsRepository;
@@ -24,13 +26,6 @@ public class H3AnalyticsService {
 
     private static final int H3_RESOLUTION = 7;
     private static final double QUALITY_THRESHOLD = 50.0;
-
-    public H3AnalyticsService(H3AnalyticsRepository h3AnalyticsRepository, H3AuditPublisher auditPublisher)
-            throws IOException {
-        this.h3AnalyticsRepository = h3AnalyticsRepository;
-        this.auditPublisher = auditPublisher;
-        this.h3Core = H3Core.newInstance();
-    }
 
     @Transactional
     public H3AnalyticsResponse recordMetrics(RecordMetricsRequest request) {
@@ -56,30 +51,26 @@ public class H3AnalyticsService {
                 .build();
 
         analytics = h3AnalyticsRepository.save(analytics);
-        log.info("Recorded H3 analytics: h3={} quality={} fallback={}",
-                h3Index, qualityScore, fallbackRecommended);
+        log.info("Recorded H3 analytics: h3={} quality={} fallback={}", h3Index, qualityScore, fallbackRecommended);
 
-        auditPublisher.publishEvent(
-                null,
-                "H3_ANALYTICS_RECORDED",
-                "SESSION",
-                request.sessionId(),
-                "SUCCESS",
-                String.format("Metrics recorded for session %s at zone %s with score %.2f",
-                        request.sessionId(), h3Index, qualityScore));
+        auditPublisher.publishEvent(null, "H3_ANALYTICS_RECORDED", "SESSION", request.sessionId(), "SUCCESS",
+                String.format("Metrics recorded for zone %s with score %.2f", h3Index, qualityScore));
 
         return toResponse(analytics);
     }
 
     @Transactional(readOnly = true)
     public List<H3ZoneSummary> getAnalyticsByZone() {
-        List<String> h3Indexes = h3AnalyticsRepository.findDistinctH3Indexes();
-
-        return h3Indexes.stream()
-                .map(h3Index -> {
-                    List<H3Analytics> records = h3AnalyticsRepository.findByH3Index(h3Index);
-                    return aggregateZone(h3Index, records);
-                })
+        return h3AnalyticsRepository.getAggregatedZoneSummaries().stream()
+                .map(proj -> new H3ZoneSummary(
+                        proj.getH3Index(),
+                        proj.getActiveSessions(),
+                        proj.getAverageQuality(),
+                        proj.getAverageLatency(),
+                        proj.getAveragePacketLoss(),
+                        proj.getTotalDisconnects(),
+                        proj.getAverageQuality() < QUALITY_THRESHOLD // Вычисляем fallback на лету
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -87,7 +78,7 @@ public class H3AnalyticsService {
     public List<H3ZoneSummary> getZonesWithIssues() {
         return getAnalyticsByZone().stream()
                 .filter(H3ZoneSummary::fallbackRecommended)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private double calculateQualityScore(int latencyMs, double packetLossPercent, int disconnects) {

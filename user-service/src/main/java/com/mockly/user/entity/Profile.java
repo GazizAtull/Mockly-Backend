@@ -1,21 +1,28 @@
 package com.mockly.user.entity;
 
+import com.mockly.user.dto.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "profiles")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Builder
 public class Profile {
 
@@ -23,8 +30,9 @@ public class Profile {
     @Column(name = "user_id")
     private UUID userId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private String role; // CANDIDATE, INTERVIEWER, ADMIN
+    private UserRole role;
 
     @Column(name = "name")
     private String name;
@@ -39,5 +47,6 @@ public class Profile {
     private String level;
 
     @Column(name = "skills", columnDefinition = "jsonb")
-    private String skills; // Stored as JSON string representation for simplicity in this example
+    @ColumnTransformer(write = "?::jsonb")
+    private String skills;
 }
